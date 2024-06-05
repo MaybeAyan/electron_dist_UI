@@ -1,0 +1,10 @@
+{
+    "appId":"6",
+    "AppKey":"cG3dKvBJ10mTGrHf5IOzQLH1dn",
+    "channelId": "6270",
+    "version": "1.0",
+    "AbSdkServerAddress":"https://gw.begindcc.com",
+    "offerId":"1450146055",
+    "virtualPayEnv":0,
+    "gameVersion":"1.0.14"
+}
