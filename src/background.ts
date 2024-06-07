@@ -12,7 +12,7 @@ app.whenReady().then(() => {
     title: 'onlySDK'
   })
   win.setMenu(null)
-  win.setSize(1100, 700)
+  win.setSize(1280, 960)
   win.webContents.openDevTools() // 打开开发者工具
   if (process.argv[2]) {
     win.loadURL(process.argv[2])
@@ -29,15 +29,19 @@ function listDirectories(basePath: string, relativePath: string) {
     .map((dirent) => dirent.name)
 }
 
+const getExtraFilesPath = (filename: string) => {
+  return path.join(process.cwd(), `/public/${filename}`)
+}
+
 /**读取文件夹名字 */
 ipcMain.handle('list-directories', (event, relativePath) => {
-  const basePath = app.getAppPath() // 或者使用 __dirname
+  const basePath = path.join(`${getExtraFilesPath('')}`) // 或者使用 __dirname
   return listDirectories(basePath, relativePath)
 })
 
 // 创建文件夹
 ipcMain.handle('create-directory', async (event, dirName, jsonData) => {
-  const dirPath = path.join(`${app.getAppPath()}/config`, dirName)
+  const dirPath = path.join(`${getExtraFilesPath('config')}`, dirName)
   try {
     if (!fs.existsSync(dirPath)) {
       fs.mkdirSync(dirPath)
@@ -51,17 +55,17 @@ ipcMain.handle('create-directory', async (event, dirName, jsonData) => {
         message: 'Success'
       }
     } else {
-      return { status: 'error', message: 'Directory already exists' }
+      return { code: 0, status: 'error', message: 'Directory already exists' }
     }
   } catch (error) {
     console.error('Failed to create directory:', error)
-    return { status: 'error', message: error }
+    return { code: 0, status: 'error', message: error }
   }
 })
 
 /**写入JSON */
 ipcMain.handle('write-json', async (event, fileName, newData) => {
-  const filePath = path.join(`${app.getAppPath()}/jsons`, fileName)
+  const filePath = path.join(`${getExtraFilesPath('jsons')}`, fileName)
   try {
     // 尝试读取现有文件
     let existingData = {}
@@ -87,7 +91,7 @@ ipcMain.handle('write-json', async (event, fileName, newData) => {
 
 ipcMain.handle('read-json', async (event, fileName) => {
   // 获取应用程序的安装目录
-  const appPath = `${app.getAppPath()}/jsons`
+  const appPath = `${getExtraFilesPath('jsons')}`
   // 完整的文件路径
   const filePath = path.join(appPath, fileName)
 
@@ -112,7 +116,7 @@ ipcMain.handle('read-json', async (event, fileName) => {
 ipcMain.handle('delete-json', async (event, fileName: string, channelId: string) => {
   try {
     // 获取应用程序的安装目录
-    const appPath = `${app.getAppPath()}/jsons`
+    const appPath = `${getExtraFilesPath('jsons')}`
     // 完整的文件路径
     const filePath = path.join(appPath, fileName)
     const data = await fs.promises.readFile(filePath, 'utf8')
@@ -134,7 +138,7 @@ ipcMain.handle('delete-json', async (event, fileName: string, channelId: string)
 
 ipcMain.handle('delete-directory', async (event, fileName: string) => {
   try {
-    const dirPath = path.join(`${app.getAppPath()}/config`, fileName)
+    const dirPath = path.join(`${getExtraFilesPath('config')}`, fileName)
     await fs.promises.rmdir(dirPath, { recursive: true })
     return {
       code: 200,

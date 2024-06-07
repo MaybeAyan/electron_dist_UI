@@ -35,20 +35,33 @@ export const viteElectronBuild = (): Plugin => {
       fs.mkdirSync(path.join(process.cwd(), 'dist/node_modules'))
 
       // 使用electron-builder打包Electron应用程序
-      electronBuilder.build({
-        config: {
-          appId: 'com.example.app',
-          productName: 'vite-electron',
-          directories: {
-            output: path.join(process.cwd(), 'release'), //输出目录
-            app: path.join(process.cwd(), 'dist') //app目录
-          },
-          asar: false,
-          nsis: {
-            oneClick: false //取消一键安装
+      electronBuilder
+        .build({
+          config: {
+            appId: 'com.example.app',
+            productName: 'onlysdk_xyx',
+            directories: {
+              output: path.join(process.cwd(), 'release'), //输出目录
+              app: path.join(process.cwd(), 'dist') //app目录
+            },
+            nsis: {
+              oneClick: false //取消一键安装
+            },
+            extraFiles: [
+              {
+                from: 'public',
+                to: 'public'
+              }
+            ]
           }
-        }
-      })
+        })
+        // Promise is returned
+        .then((result) => {
+          console.log(JSON.stringify(result))
+        })
+        .catch((error) => {
+          console.error(error)
+        })
     }
   }
 }
