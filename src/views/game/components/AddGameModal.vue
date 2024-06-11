@@ -3,7 +3,7 @@
     <t-dialog
       v-model:visible="visible"
       attach="body"
-      header="新增游戏"
+      :header="isAdd ? '新增游戏' : '修改游戏'"
       destroy-on-close
       :cancelBtn="null"
       @close="handleCancel"
@@ -37,12 +37,22 @@
 </template>
 
 <script lang="ts" setup>
-import { isNumber } from '@/utils/is'
 import { MessagePlugin, type FormInstanceFunctions, type FormProps } from 'tdesign-vue-next'
-import { defineModel, reactive, ref } from 'vue'
-import type { IGameJson } from '../types'
+import { defineModel, reactive, ref, toRefs, watch } from 'vue'
+import type { Games, IGameJson } from '../types'
+import { rules } from '../constant/index'
 
 const { ipcRenderer } = require('electron')
+
+type Props = {
+  isAdd: boolean
+  record?: Games
+  flag: number
+}
+
+const props = defineProps<Props>()
+
+const { isAdd, record, flag } = toRefs(props)
 
 const visible = defineModel<boolean>()
 
@@ -58,16 +68,19 @@ const handleCancel = () => {
 const onSubmit: FormProps['onSubmit'] = ({ validateResult, firstError, e }) => {
   e?.preventDefault()
   if (validateResult === true) {
-    // 写入json
-    try {
-      createDirectory(game)
-      writeData()
-      emit('flash')
-      visible.value = false
-      MessagePlugin.success('提交成功')
-      Object.assign(game, initGame())
-    } catch (error) {
-      console.error(error)
+    if (isAdd.value) {
+      try {
+        createDirectory(game)
+        writeData()
+        emit('flash')
+        visible.value = false
+        MessagePlugin.success('提交成功')
+        Object.assign(game, initGame())
+      } catch (error) {
+        console.error(error)
+      }
+    } else {
+      console.log('编辑')
     }
   } else {
     MessagePlugin.warning(firstError + '')
@@ -108,41 +121,16 @@ const initGame = (): {
 }
 const game = reactive(initGame())
 
-const channelIdValidator = (val: string) => {
-  const res = isNumber(val)
-  if (!res) {
-    return {
-      result: false,
-      message: '请输入数字',
-      type: 'error'
-    }
-  } else {
-    return { result: true, type: 'success' }
+watch(
+  () => flag,
+  () => {
+    // Object.assign(game, newVal.value)
+    Object.assign(game, record.value)
+  },
+  {
+    deep: true
   }
-}
-
-const appIdValidator = (val: string) => {
-  const res = isNumber(val)
-  if (!res) {
-    return {
-      result: false,
-      message: '请输入数字',
-      type: 'error'
-    }
-  } else {
-    return { result: true, type: 'success' }
-  }
-}
-
-const rules = {
-  name: [
-    { required: true, message: '游戏名必填', type: 'error', trigger: 'blur' },
-    { required: true, message: '游戏名必填', type: 'error', trigger: 'change' },
-    { whitespace: true, message: '游戏名不能为空' }
-  ],
-  appId: [{ required: true, message: 'APPId不能为空' }, { validator: appIdValidator }],
-  channelId: [{ required: true, message: '渠道号不能为空' }, { validator: channelIdValidator }]
-}
+)
 </script>
 
 <style lang="less" scoped></style>

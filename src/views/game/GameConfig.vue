@@ -2,40 +2,57 @@
   <div>
     <t-card>
       <span>游戏配置</span>
-      <!-- <t-button class="btn" @click="handleClick" variant="outline">读取配置</t-button> -->
-      <t-button class="btn" @click="() => (visible = true)" variant="outline">新增游戏</t-button>
-      <div class="cards">
-        <t-card
-          v-for="item in games"
-          :key="item.channelId"
-          class="game_cfg"
-          @click="setJson(item.channelId)"
+      <t-button class="btn" @click="handleShow()" variant="outline">新增游戏</t-button>
+      <div class="mt-4">
+        <t-table
+          row-key="channelId"
+          :data="games"
+          :columns="gameColumns"
+          stripe
+          hover
+          cell-empty-content="-"
+          lazy-load
         >
-          <div class="warp">
-            <div class="texts">
-              <span>{{ item.channelId }}</span>
-              <br />
-              <span class="title">{{ item.name }}</span>
+          <template #operation="{ row }: { row: Games }">
+            <div class="flex">
+              <div>
+                <t-button
+                  class="mr-4"
+                  size="small"
+                  variant="outline"
+                  theme="primary"
+                  @click="setJson(row.channelId)"
+                  >配置</t-button
+                >
+              </div>
+              <div class="cursor-pointer mr-4" @click="handleEdit(row)">
+                <EditIcon />
+              </div>
+              <div class="cursor-pointer" @click="handleDelete(row.channelId)"><DeleteIcon /></div>
             </div>
-            <div @click.stop="handleDelete(item.channelId)" class="mb-2">
-              <DeleteIcon />
-            </div>
-          </div>
-        </t-card>
+          </template>
+        </t-table>
       </div>
     </t-card>
 
-    <AddGameModal v-model="visible" @flash="handleClick" />
+    <AddGameModal
+      v-model="visible"
+      @flash="handleClick"
+      :record="record"
+      :isAdd="isAdd"
+      :flag="flag"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref } from 'vue'
 import AddGameModal from './components/AddGameModal.vue'
-import { DeleteIcon } from 'tdesign-icons-vue-next'
+import { DeleteIcon, EditIcon } from 'tdesign-icons-vue-next'
 import useConfirmDia from '@/hooks/useConfirmDia'
 import type { Games, IGameJson } from './types'
 import { useRouter } from 'vue-router'
+import { gameColumns } from './constant/index'
 
 const { handleConfirm } = useConfirmDia()
 
@@ -79,7 +96,6 @@ const games = ref<Games[]>([])
 const visible = ref<boolean>(false)
 
 const handleDelete = async (id: string | number) => {
-  console.log(id)
   handleConfirm({
     title: '删除',
     body: '是否确认删除该游戏',
@@ -109,41 +125,26 @@ const setJson = async (id: string | number) => {
     }
   })
 }
+
+const isAdd = ref(false)
+const record = ref<Games>()
+const flag = ref(1)
+
+const handleShow = () => {
+  isAdd.value = true
+  visible.value = true
+}
+
+const handleEdit = (input: Games) => {
+  flag.value++
+  record.value = input
+  isAdd.value = false
+  visible.value = true
+}
 </script>
 
 <style lang="less" scoped>
 .btn {
   margin-left: 20px;
-}
-
-.cards {
-  margin-top: 20px;
-  display: flex;
-  flex-wrap: wrap;
-
-  .game_cfg {
-    margin-right: 10px;
-    margin-top: 10px;
-    cursor: pointer;
-    min-width: 180px;
-    height: auto;
-
-    .warp {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-
-      .texts {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-
-        .title {
-          font-weight: 550;
-          margin-top: -15px;
-        }
-      }
-    }
-  }
 }
 </style>
