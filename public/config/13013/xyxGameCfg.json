@@ -1,10 +1,10 @@
 {
-    "appId":"13",
-    "AppKey":"g37A3JuhJ7QPT156ONfli3bTCi",
-    "channelId": "13013",
-    "version": "1.0",
-    "AbSdkServerAddress":"https://gw.begindcc.com",
-    "offerId":"1450146055",
-    "virtualPayEnv":0,
-    "gameVersion":"1.0.14"
+  "appId": "13",
+  "AppKey": "g37A3JuhJ7QPT156ONfli3bTCi",
+  "channelId": "13013",
+  "version": "1.0",
+  "AbSdkServerAddress": "https://gw.begindcc.com",
+  "offerId": "1450146055",
+  "virtualPayEnv": 0,
+  "gameVersion": "1.0.14"
 }

@@ -5,26 +5,6 @@
   </div>
 </template>
 
-<script lang="ts" setup>
-import { watch } from 'vue'
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-
-const getData = async () => {
-  // ipcRenderer.invoke('read-json')
-}
-
-watch(
-  () => router.currentRoute.value?.query,
-  (newValue) => {
-    console.log(newValue?.channelId)
-  },
-  {
-    deep: true,
-    immediate: true
-  }
-)
-</script>
+<script lang="ts" setup></script>
 
 <style lang="less" scoped></style>

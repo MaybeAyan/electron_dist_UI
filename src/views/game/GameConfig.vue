@@ -42,17 +42,24 @@
       :isAdd="isAdd"
       :flag="flag"
     />
+
+    <GameCfgEditer
+      v-model="edit.visible"
+      @flash="handleClick"
+      :record="edit.record"
+      :flag="edit.flag"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { reactive, ref } from 'vue'
 import AddGameModal from './components/AddGameModal.vue'
 import { DeleteIcon, EditIcon } from 'tdesign-icons-vue-next'
 import useConfirmDia from '@/hooks/useConfirmDia'
-import type { Games, IGameJson } from './types'
-import { useRouter } from 'vue-router'
+import type { Games, IEdit, IGameJson, IgameJsonCfg } from './types'
 import { gameColumns } from './constant/index'
+import GameCfgEditer from './components/GameCfgEditer.vue'
 
 const { handleConfirm } = useConfirmDia()
 
@@ -114,18 +121,6 @@ const delJsonByChannelId = async (id: string) => {
     }
   }
 }
-
-const router = useRouter()
-
-const setJson = async (id: string | number) => {
-  router.push({
-    path: './json',
-    query: {
-      channelId: id
-    }
-  })
-}
-
 const isAdd = ref(false)
 const record = ref<Games>()
 const flag = ref(1)
@@ -140,6 +135,28 @@ const handleEdit = (input: Games) => {
   record.value = input
   isAdd.value = false
   visible.value = true
+}
+
+const edit = reactive<IEdit>({
+  visible: false,
+  flag: 1,
+  record: {
+    appId: '',
+    channelId: '',
+    AppKey: '',
+    version: '',
+    AbSdkServerAddress: '',
+    offerId: '',
+    virtualPayEnv: 0,
+    gameVersion: ''
+  }
+})
+
+const setJson = async (id: string | number) => {
+  const res = await ipcRenderer.invoke('get-game-config', id.toString())
+  edit.record = res
+  edit.visible = true
+  edit.flag++
 }
 </script>
 

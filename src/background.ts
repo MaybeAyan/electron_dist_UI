@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain } from 'electron'
+import { app, BrowserWindow } from 'electron'
+import { ipcMain } from 'electron'
 import fs from 'fs'
 import path from 'path'
 
@@ -21,7 +22,7 @@ app.whenReady().then(() => {
   }
 })
 
-function listDirectories(basePath: string, relativePath: string) {
+const listDirectories = (basePath: string, relativePath: string) => {
   const folderPath = path.join(basePath, relativePath)
   return fs
     .readdirSync(folderPath, { withFileTypes: true })
@@ -76,6 +77,58 @@ ipcMain.handle('write-json', async (event, fileName, newData) => {
 
     // 合并现有数据和新数据
     const mergedData = { ...existingData, ...newData }
+
+    // 写回合并后的数据到文件
+    await fs.promises.writeFile(filePath, JSON.stringify(mergedData, null, 2))
+    return {
+      code: 200,
+      message: 'Success'
+    }
+  } catch (error) {
+    console.error('Failed to write JSON file:', error)
+    return { status: 'error', message: error }
+  }
+})
+
+/**写入JSON */
+ipcMain.handle('edit-json', async (event, fileName, newData) => {
+  const filePath = path.join(`${getExtraFilesPath('jsons')}`, fileName)
+  try {
+    // 尝试读取现有文件
+    let existingData = {}
+    if (fs.existsSync(filePath)) {
+      const rawData = await fs.promises.readFile(filePath, 'utf8')
+      existingData = JSON.parse(rawData)
+    }
+
+    // 合并现有数据和新数据
+    const mergedData = { ...existingData, ...newData }
+
+    // 写回合并后的数据到文件
+    await fs.promises.writeFile(filePath, JSON.stringify(mergedData, null, 2))
+    return {
+      code: 200,
+      message: 'Success'
+    }
+  } catch (error) {
+    console.error('Failed to write JSON file:', error)
+    return { status: 'error', message: error }
+  }
+})
+
+/**写入具体JSON配置 */
+ipcMain.handle('write-config', async (event, fileName, newData) => {
+  const filePath = path.join(`${getExtraFilesPath(`config/${fileName}`)}`, 'xyxGameCfg.json')
+  try {
+    // 尝试读取现有文件
+    let existingData = {}
+    if (fs.existsSync(filePath)) {
+      const rawData = await fs.promises.readFile(filePath, 'utf8')
+      existingData = JSON.parse(rawData)
+    }
+
+    // 合并现有数据和新数据
+    const mergedData = Object.assign(existingData, newData)
 
     // 写回合并后的数据到文件
     await fs.promises.writeFile(filePath, JSON.stringify(mergedData, null, 2))
@@ -147,5 +200,19 @@ ipcMain.handle('delete-directory', async (event, fileName: string) => {
   } catch (err) {
     console.error('Error deleting folder:', err)
     throw err
+  }
+})
+
+ipcMain.handle('get-game-config', async (event, channel: string) => {
+  try {
+    const appPath = `${getExtraFilesPath('config')}`
+    const filePath = path.join(appPath, channel)
+    const resPath = path.join(filePath, 'xyxGameCfg.json')
+    const rawData = await fs.promises.readFile(resPath, 'utf8')
+    const data = JSON.parse(rawData)
+    return { code: 200, status: 'success', data: data }
+  } catch (error) {
+    console.error(error)
+    throw error
   }
 })
