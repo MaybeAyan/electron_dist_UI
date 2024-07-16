@@ -3,6 +3,9 @@
     <t-card>
       <span>游戏配置</span>
       <t-button class="btn" @click="handleShow()" variant="outline">新增游戏</t-button>
+
+      <t-button class="ml-4 bg-sky-500"></t-button>
+
       <div class="mt-4">
         <t-table
           row-key="channelId"

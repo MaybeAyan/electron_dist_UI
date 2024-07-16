@@ -1,6 +1,7 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, dialog } from 'electron'
 import { ipcMain } from 'electron'
 import fs from 'fs'
+import Jimp from 'jimp'
 import path from 'path'
 
 app.whenReady().then(() => {
@@ -213,6 +214,43 @@ ipcMain.handle('get-game-config', async (event, channel: string) => {
     return { code: 200, status: 'success', data: data }
   } catch (error) {
     console.error(error)
+    throw error
+  }
+})
+
+ipcMain.handle('select-image', async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ['openFile'],
+    filters: [{ name: 'Images', extensions: ['jpg', 'png', 'gif'] }]
+  })
+  return result.filePaths[0]
+})
+ipcMain.handle('remove-background', async (event, { imagePath, backgroundColor, tolerance }) => {
+  try {
+    const image = await Jimp.read(imagePath)
+
+    const [bgRed, bgGreen, bgBlue] = backgroundColor
+
+    image.scan(0, 0, image.bitmap.width, image.bitmap.height, function (x, y, idx) {
+      const red = this.bitmap.data[idx]
+      const green = this.bitmap.data[idx + 1]
+      const blue = this.bitmap.data[idx + 2]
+
+      const colorDistance = Math.sqrt(
+        Math.pow(red - bgRed, 2) + Math.pow(green - bgGreen, 2) + Math.pow(blue - bgBlue, 2)
+      )
+
+      if (colorDistance < tolerance) {
+        this.bitmap.data[idx + 3] = 0
+      }
+    })
+
+    const uniqueFileName = `output_${new Date().getTime()}.png`
+    const outputPath = path.join(__dirname, uniqueFileName)
+    await image.writeAsync(outputPath)
+    return outputPath
+  } catch (error) {
+    console.error('Error processing image:', error)
     throw error
   }
 })

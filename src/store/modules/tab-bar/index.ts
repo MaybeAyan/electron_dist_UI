@@ -20,7 +20,7 @@ const useAppStore = defineStore(Names.TAB_BAR, {
     cacheTabList: [],
     tagList: [
       // 根据需要设置第一个元素
-      { title: '游戏管理', name: 'game', fullPath: '/game/list' }
+      { title: '优化Demo', name: 'demo', fullPath: '/demo' }
     ]
   }),
 

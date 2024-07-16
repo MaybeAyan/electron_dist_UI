@@ -15,7 +15,7 @@ function setupPageGuard(router: Router) {
 
 export function getWhiteList() {
   // 获取基础路由
-  const whiteList: string[] = ['/']
+  const whiteList: string[] = ['/demo']
   routes.forEach((item) => {
     whiteList.push(item.path)
 

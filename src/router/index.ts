@@ -12,7 +12,7 @@ export const routes: Array<RouteRecordRaw> = [
     // 默认layout
     component: DefaultLayout,
     children: appRoutes,
-    redirect: '/game'
+    redirect: '/demo'
   },
   {
     path: '/redirect',
